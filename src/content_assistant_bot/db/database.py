@@ -34,7 +34,7 @@ def get_engine():
     """Get a new engine for the database."""
     return create_engine(
         DATABASE_URL,
-        connect_args={"connect_timeout": 5, "application_name": "telegram_bot"} if "postgresql" in DATABASE_URL else {},
+        connect_args={"connect_timeout": 5, "application_name": "content_assistant_bot"} if "postgresql" in DATABASE_URL else {},
         poolclass=NullPool if "postgresql" in DATABASE_URL else None,
     )
 

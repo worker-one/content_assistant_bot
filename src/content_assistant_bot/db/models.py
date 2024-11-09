@@ -26,7 +26,8 @@ class User(Base):
     name = Column(String, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
-    lang = Column(String, default="en")
+    lang = Column(String, default="ru")
     role = Column(String, default="user")
 
     messages = relationship("Message", back_populates="user")
+

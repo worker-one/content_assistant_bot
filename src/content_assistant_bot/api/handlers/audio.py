@@ -1,7 +1,7 @@
 import logging
 import os
 
-from telegram_bot.db import crud
+from content_assistant_bot.db import crud
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

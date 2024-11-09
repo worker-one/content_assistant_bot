@@ -7,10 +7,10 @@ import pytz  # type: ignore
 from apscheduler.schedulers.background import BackgroundScheduler
 from omegaconf import OmegaConf
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from telegram_bot.db import crud
+from content_assistant_bot.db import crud
 
-config = OmegaConf.load("./src/telegram_bot/conf/config.yaml")
-strings = OmegaConf.load("./src/telegram_bot/conf/strings.yaml")
+config = OmegaConf.load("./src/content_assistant_bot/conf/config.yaml")
+strings = OmegaConf.load("./src/content_assistant_bot/conf/strings.yaml")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

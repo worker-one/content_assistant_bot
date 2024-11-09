@@ -1,0 +1,136 @@
+welcome:
+  en: "Hello {name}!"
+  ru: "Привет {name}!"
+no_rights:
+  en: "You have no rights to do this."
+  ru: "У вас нет прав для этого."
+menu:
+  title:
+    en: "Menu"
+    ru: "Меню"
+  options:
+    analyze_account:
+      en: "Analyze account"
+      ru: "Анализировать аккаунт"
+    hashtag_or_query_analysis:
+      en: "Hashtag or query analysis"
+      ru: "Анализ по хештегу или запросу"
+    video_idea_generation:
+      en: "Video idea generation"
+      ru: "Генерация идей видео"
+    subscription:
+      en: "Subscription"
+      ru: "Подписка"
+
+analyze_account:
+  enter_nickname:
+    en: "Enter Instagram nickname:"
+    ru: "Отправь никнейм аккаунта, который хочешь проанализировать"
+  enter_number_of_videos:
+    en: "Enter number of videos:"
+    ru: "Введите топ N популярных видео:"
+  received:
+    en: "The request is being processed ... "
+    ru: "Запрос обрабатывается ... "
+  no_found:
+    en: "No account found."
+    ru: "Аккаунт не найден."
+  private_account:
+    en: "Account is private."
+    ru: "Кажется, этот аккаунт закрыт или никнейм введён неверно. Пожалуйста, проверь его и попробуй снова."
+  error:
+    en: "Error."
+    ru: "Ошибка."
+  ask_number_videos:
+    en: "How many videos do you want to analyze?"
+    ru: "Отлично, я нашёл этот аккаунт! Выбери количество видео, которые ты хочешь увидеть"
+  result_ready:
+    en: "Here is the top {n} reels from {nickname}"
+    ru: "Вот топ {n} рилов от {nickname}"
+  results:
+    en: "Link: {link}\nViews: {views}\nLikes: {likes}\nComments: {comments}"
+    ru: |
+      Видео {link} — {views} просмотров
+      ❤️{likes} лайков — {likes_comparative}
+
+      💬 {comments} комментариев — {comments_comparative}
+  comparative_more:
+    en: "{value} more than usual."
+    ru: "на {value} больше чем обычно."
+  comparative_less:
+    en: "{value} less than usual."
+    ru: "на {value} меньше чем обычно."
+
+analyze_hashtag:
+  enter_hashtag:
+    en: "Enter hashtag:"
+    ru: "Введите хештег:"
+  number_of_videos_options:
+    en: "Enter number of videos:"
+    ru: "Введите топ N популярных видео:"
+  received:
+    en: "The request is being processed ... "
+    ru: "Запрос обрабатывается ... "
+  no_found:
+    en: "No videos found."
+    ru: "Видео не найдены."
+  error:
+    en: "Error."
+    ru: "Ошибка."
+  ask_number_videos:
+    en: "How many videos do you want to analyze?"
+    ru: "Выбери количество популярных видео, которые ты хочешь увидеть"
+  result_ready:
+    en: "Here is the top {n} reels from #{hashtag}"
+    ru: "Вот топ {n} рилов по хештегу #{hashtag}"
+  results:
+    en: "Link: {link}\nViews: {views}\n❤️ {likes} likes\n💬 {comments} comments"
+    ru: |
+      Видео {link} — {views} просмотров
+      ❤️{likes} лайков
+
+      💬 {comments} комментариев
+  next_videos:
+    en: "Next videos"
+    ru: "Следующие 3 видео"
+
+generate_ideas:
+  enter_query:
+    en: "Enter query:"
+    ru: "О чём будет твоё видео? Отправь мне тему для видео, и я предложу 5 идей для начала✍🏻."
+  received:
+    en: "The request is being processed ... "
+    ru: "Запрос обрабатывается ... "
+  no_found:
+    en: "No ideas found."
+    ru: "Идеи не найдены."
+  error:
+    en: "Error."
+    ru: "Ошибка."
+  result_ready:
+    en: "Here are some video ideas for {query}"
+    ru: "Вот идеи для видео на тему {query}"
+  more_ideas:
+    en: "More ideas"
+    ru: "Напиши ещё 5 идей"
+  results:
+    en: "{idea}"
+    ru: "{idea}"
+
+admin_menu:
+  title:
+    en: "Admin menu"
+    ru: "Меню администратора"
+  export_data:
+    en: "Export data"
+    ru: "Экспорт данных"
+  send_message:
+    en: "Send message"
+    ru: "Отправить сообщение"
+  add_admin:
+    en: "Add admin"
+    ru: "Добавить администратора"
+
+error:
+  en: "Error."
+  ru: "Произошла ошибка при обработке запроса. Пожалуйста, попробуй позже."

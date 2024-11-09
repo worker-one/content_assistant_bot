@@ -34,7 +34,7 @@ def upsert_user(
     id: Optional[int] = None,
     first_name: Optional[str] = None,
     last_name: Optional[str] = None,
-    lang: str = "en",
+    lang: str = "ru",
     role: Optional[str] = None,
 ) -> User:
     user = User(name=name)

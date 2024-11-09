@@ -1,4 +1,4 @@
-from telegram_bot.app import App
+from content_assistant_bot.app import App
 
 
 def test_run():

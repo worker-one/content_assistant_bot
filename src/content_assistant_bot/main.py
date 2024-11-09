@@ -2,9 +2,9 @@ import os
 
 from dotenv import find_dotenv, load_dotenv
 
-from telegram_bot.api.bot import start_bot
-from telegram_bot.db import crud
-from telegram_bot.db.database import create_tables, drop_tables
+from content_assistant_bot.api.bot import start_bot
+from content_assistant_bot.db import crud
+from content_assistant_bot.db.database import create_tables, drop_tables
 
 # Load and get environment variables
 load_dotenv(find_dotenv(usecwd=True))
@@ -16,5 +16,5 @@ if __name__ == "__main__":
     create_tables()
     # add admin user
     if ADMIN_USERNAME:
-        crud.upsert_user(name=ADMIN_USERNAME, role="admin")
+        crud.upsert_user(name=ADMIN_USERNAME, role="admin", lang="ru")
     start_bot()
