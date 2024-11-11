@@ -3,7 +3,6 @@ import os
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -15,13 +14,13 @@ def create_keyboard_markup(
     ) -> InlineKeyboardMarkup:
     if orientation == "horizontal":
         keyboard_markup = InlineKeyboardMarkup(row_width=len(options))
+        print(f"orientation: {orientation}")
     elif orientation == "vertical":
         keyboard_markup = InlineKeyboardMarkup(row_width=1)
     else:
-        raise ValueError("Invalid orientation. Must be 'horizontal' or 'vertical'.")
-    for option, data in zip(options, callback_data):
-        print(option, data)
-        keyboard_markup.add(InlineKeyboardButton(option, callback_data=data))
+        raise ValueError("Invalid orientation value. Must be 'horizontal' or 'vertical'")
+    buttons = [InlineKeyboardButton(option, callback_data=data) for option, data in zip(options, callback_data)]
+    keyboard_markup.add(*buttons)
     return keyboard_markup
 
 
@@ -54,3 +53,10 @@ def parse_callback_data(data):
     """Parse callback data to extract chat ID and name."""
     parts = data.split("_")
     return int(parts[2]), parts[3]
+
+
+def sanitize_instagram_input(user_input: str) -> str:
+    user_input = user_input.replace("#", "").replace("@", "")
+    if "instagram.com" in user_input:
+        user_input = user_input.strip('/').split('/')[-1]
+    return user_input

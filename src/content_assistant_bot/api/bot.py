@@ -6,7 +6,7 @@ import telebot
 from dotenv import find_dotenv, load_dotenv
 from omegaconf import OmegaConf
 
-from content_assistant_bot.api.handlers import admin, audio, ideas, menu, reels
+from content_assistant_bot.api.handlers import account, admin, hashtag, ideas, menu
 from content_assistant_bot.api.middlewares.antiflood import AntifloodMiddleware
 from content_assistant_bot.api.middlewares.user import UserCallbackMiddleware, UserMessageMiddleware
 
@@ -29,9 +29,9 @@ def start_bot():
     logger.info(msg=f"Bot `{str(bot.get_me().username)}` has started")
 
     # Handlers
-    reels.register_handlers(bot)
+    account.register_handlers(bot)
+    hashtag.register_handlers(bot)
     menu.register_handlers(bot)
-    audio.register_handlers(bot)
     admin.register_handlers(bot)
     #ideas.register_handlers(bot)
 

@@ -29,8 +29,6 @@ class InstagramWrapper:
             user_id = self.client.user_id_from_username(username)
         except:
             user_id = None
-        print(f"user_id {user_id}")
-        print(f"User ID: {user_id}")
         if not user_id:
             return {"status": 404, "message": "User not found"}
         user_info = self.client.user_info(user_id)
@@ -47,12 +45,14 @@ class InstagramWrapper:
                 else:
                     er = 0
                 reel_item = {
+                    "pk": media.pk,
                     "title": media.title,
                     "caption_text": media.caption_text,
                     "likes": media.like_count,
                     "comments": media.comment_count,
                     "post_date": media.taken_at,
                     "link": f"https://www.instagram.com/reel/{media.code}/",
+                    "video_url": media.video_url,
                     "play_count": media.play_count,
                     "id": media.id,
                     "er": er,
@@ -65,10 +65,10 @@ class InstagramWrapper:
 
     def fetch_hashtag_reels(self, hashtag: str, n_media_items: int = 50, estimate_view_count: bool = False):
         media_list = self.client.hashtag_medias_top(hashtag, amount=n_media_items)
-        print(len(media_list))
         if not media_list:
             return {"status": 404, "message": "Hashtag not found"}
         reels = []
+        logger.info(f"Found {len(media_list)} reels for hashtag {hashtag}")
         for media in media_list:
             if media.media_type == 2:
                 if media.play_count != 0:
@@ -76,12 +76,14 @@ class InstagramWrapper:
                 else:
                     er = 0
                 reel_item = {
+                    "pk": media.pk,
                     "title": media.title,
                     "caption_text": media.caption_text,
                     "likes": media.like_count,
                     "comments": media.comment_count,
                     "post_date": media.taken_at,
                     "link": f"https://www.instagram.com/reel/{media.code}/",
+                    "video_url": media.video_url,
                     "play_count": media.play_count,
                     "id": media.id,
                     "er": er,

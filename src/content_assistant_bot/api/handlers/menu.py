@@ -33,6 +33,7 @@ def register_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data == "_menu")
     def menu_menu_callback(call):
+        bot.clear_step_handler_by_chat_id(chat_id=call.message.chat.id)
         bot.send_message(
             call.message.chat.id, strings.menu.title["ru"],
             reply_markup=create_main_menu_markup(strings.menu.options, "ru")

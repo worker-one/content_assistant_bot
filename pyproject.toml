@@ -27,6 +27,7 @@ dependencies = [
     "python-dotenv",
     "pytz",
     "instagrapi",
+    "instaloader",
     "types-pytz",
     "xlsxwriter"
 ]
