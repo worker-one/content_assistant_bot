@@ -3,12 +3,12 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: global
+    environment: dev
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -19,11 +19,10 @@ jobs:
       - name: Create .env file
         run: |
           echo "BOT_TOKEN=${{ vars.BOT_TOKEN }}" >> .env
-          echo "DB_HOST=${{ vars.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ vars.DB_PORT }}" >> .env
-          echo "DB_NAME=${{ vars.DB_NAME }}" >> .env
-          echo "DB_USER=${{ vars.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >> .env
+          echo "ADMIN_USERNAME=${{ vars.ADMIN_USERNAME }}" >> .env
+          echo "INSTAGRAM_USERNAME=${{ vars.INSTAGRAM_USERNAME }}" >> .env
+          echo "INSTAGRAM_PASSWORD=${{ vars.INSTAGRAM_PASSWORD }}" >> .env
+          echo "FIREWORKS_API_KEY=${{ vars.FIREWORKS_API_KEY }}" >> .env
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
@@ -36,7 +35,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/real_estate_telegram_bot:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_USERNAME }}:dev
 
       - name: Log out from DockerHub
         run: docker logout
