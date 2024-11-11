@@ -3,8 +3,6 @@ import logging.config
 import os
 from datetime import datetime
 
-import pytz  # type: ignore
-from apscheduler.schedulers.background import BackgroundScheduler
 from omegaconf import OmegaConf
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from content_assistant_bot.db import crud
