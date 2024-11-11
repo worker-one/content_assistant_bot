@@ -27,7 +27,8 @@ dependencies = [
     "psycopg2-binary",
     "python-dotenv",
     "instagrapi",
-    "xlsxwriter"
+    "xlsxwriter",
+    "pillow"
 ]
 
 [project.optional-dependencies]
