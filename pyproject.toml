@@ -28,6 +28,9 @@ dependencies = [
     "sqlalchemy==2.0.36",
     "psycopg2-binary",
     "python-dotenv",
+    "langchain_fireworks",
+    "langchain_openai",
+    "langchain_core",
     "instagrapi",
     "xlsxwriter",
     "pillow"
