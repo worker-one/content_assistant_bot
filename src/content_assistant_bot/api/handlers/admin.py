@@ -13,11 +13,6 @@ strings = OmegaConf.load("./src/content_assistant_bot/conf/strings.yaml")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize the scheduler
-scheduler = BackgroundScheduler()
-
-# Dictionary to store user data during message scheduling
-user_data = {}
 
 def create_admin_menu_markup(strings, lang) -> InlineKeyboardMarkup:
     menu_markup = InlineKeyboardMarkup(row_width=1)
@@ -141,7 +136,4 @@ def register_handlers(bot):
             bot.send_message(user_id, str(e))
             logger.error(f"Error exporting data: {e}")
 
-
-# Start the scheduler
-scheduler.start()
 
