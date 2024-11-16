@@ -26,6 +26,7 @@ bot = telebot.TeleBot(BOT_TOKEN, use_class_middlewares=True)
 
 
 def start_bot():
+    logger.info(f"{config.name} v{config.version}")
     logger.info(msg=f"Bot `{str(bot.get_me().username)}` has started")
 
     # Handlers
@@ -33,7 +34,7 @@ def start_bot():
     hashtag.register_handlers(bot)
     menu.register_handlers(bot)
     admin.register_handlers(bot)
-    #ideas.register_handlers(bot)
+    ideas.register_handlers(bot)
 
     # Middlewares
     if config.antiflood.enabled:
