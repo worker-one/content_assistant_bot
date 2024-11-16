@@ -15,7 +15,7 @@ def create_main_menu_markup(options: dict, lang: str = "en"):
         InlineKeyboardButton(options.analyze_account[lang], callback_data="_analyze_account"),
         InlineKeyboardButton(options.hashtag_or_query_analysis[lang], callback_data="_analyze_hashtag"),
         InlineKeyboardButton(options.video_idea_generation[lang], callback_data="_generate_ideas"),
-        InlineKeyboardButton(options.subscription[lang], callback_data="_subscription")
+        #InlineKeyboardButton(options.subscription[lang], callback_data="_subscription")
     )
     return menu_markup
 

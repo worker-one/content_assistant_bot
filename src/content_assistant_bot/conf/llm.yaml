@@ -10,11 +10,11 @@ fireworksai_llama:
   _target_: content_assistant_bot.api.schemas.ModelConfig
   chat_history_limit: 10
   max_tokens: 2500
-  model_name: accounts/fireworks/models/llama-v3-70b-instruct
+  model_name: accounts/fireworks/models/mixtral-8x22b-instruct
   provider: fireworksai
   stream: false
   temperature: 0.7
-  system_prompt: "Вы креативный помощник, подающий идеи по поводу видео, адаптированного под короткие форматы в инстаграме."
+  system_prompt: "Вы креативный помощник, подающий идеи по поводу видео, адаптированного под короткие форматы в инстаграме. Отвечай на языке, на котором задан вопрос. Предложи 5 идей. Каждую идею разделяй двумя новыми пустыми строками."
 openai_gpt4o:
   _target_: content_assistant_bot.api.schemas.ModelConfig
   chat_history_limit: 10
