@@ -4,5 +4,3 @@ timezone: "Europe/Paris"
 antiflood:
   enabled: true
   time_window_seconds: 2
-application:
-  parameter: "value"
