@@ -21,13 +21,14 @@ classifiers = [  #
 
 dependencies = [
     "pyTelegramBotAPI==4.23.0",
+    "hydra-core",
     "omegaconf==2.3.0",
+    "pandas",
+    "openpyxl",
     "sqlalchemy==2.0.36",
     "psycopg2-binary",
     "python-dotenv",
-    "hydra-core",
     "instagrapi",
-    "instaloader",
     "langchain_fireworks",
     "langchain_openai",
     "langchain_core",

@@ -26,4 +26,4 @@ COPY . /app
 EXPOSE 80
 
 # Run the application when the container launches
-CMD ["python", "src/telegram_bot/main.py"]
+CMD ["python", "src/content_assistant_bot/main.py"]
