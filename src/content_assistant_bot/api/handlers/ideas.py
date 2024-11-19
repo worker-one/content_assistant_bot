@@ -1,23 +1,22 @@
 import logging
-import re
 
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from PIL import Image
-from telebot.types import CallbackQuery
 from telebot import TeleBot
+from telebot.types import CallbackQuery
 
-from content_assistant_bot.api.common import is_command, create_keyboard_markup
+from content_assistant_bot.api.common import create_keyboard_markup, is_command
+from content_assistant_bot.api.schemas import Message
 from content_assistant_bot.core.llm import LLM
 from content_assistant_bot.db import crud
-from content_assistant_bot.api.schemas import Message
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# load config from strings.yaml
-strings = OmegaConf.load("./src/content_assistant_bot/conf/strings.yaml")
+# load config from config.strings.yaml
+config = OmegaConf.load("./src/content_assistant_bot/conf/ideas.yaml")
 
 def send_llm_response(
     bot: TeleBot,
@@ -28,12 +27,10 @@ def send_llm_response(
     ) -> list[Message]:
 
     # Load configurations
-    config_llm = OmegaConf.load("./src/content_assistant_bot/conf/llm.yaml")
-    model_config = instantiate(config_llm.fireworksai_llama)
+    model_config = instantiate(config.llm)
 
     # Initialize the LLM model
     llm = LLM(model_config)
-    logger.info(f"Loaded LLM model with config: {model_config.dict()}")
 
     # Generate and send the final response
     response = llm.run(chat_history, image=image)
@@ -60,13 +57,13 @@ def generate_more_ideas(
     del bot.callback_query_handlers[-1]
     chat_history.append(
         Message(
-            content=strings.generate_ideas.more_ideas.ru,
+            content=config.strings.more_ideas.ru,
             role="user"
         )
     )
     chat_history = send_llm_response(
         bot, call.from_user.id, chat_history,
-        reply_markup=create_keyboard_markup(["Menu"], ["_menu"])
+        reply_markup=create_keyboard_markup(["Меню"], ["_menu"])
     )
 
 
@@ -79,7 +76,8 @@ def register_handlers(bot):
         # Ask user to enter the prompt
         sent_message = bot.send_message(
             call.from_user.id,
-            strings.generate_ideas.enter_query[user.lang]
+            config.strings.enter_query[user.lang],
+            reply_markup=create_keyboard_markup(["Меню"], ["_menu"])
         )
 
         # Register next handler
@@ -105,8 +103,8 @@ def register_handlers(bot):
         ]
 
         more_ideas_button = create_keyboard_markup(
-            [strings.generate_ideas.more_ideas.ru],
-            ["_generate_more_ideas"]
+            [config.strings.more_ideas.ru, config.strings.main_menu.ru],
+            ["_generate_more_ideas", "_menu"]
         )
 
         chat_history = send_llm_response(

@@ -1,3 +1,4 @@
+from ast import parse
 import logging.config
 
 from omegaconf import OmegaConf
@@ -22,7 +23,15 @@ def create_main_menu_markup(options: dict, lang: str = "en"):
 
 def register_handlers(bot):
 
-    @bot.message_handler(commands=["start", "menu"])
+    @bot.message_handler(commands=["start"])
+    def start_command(message: Message, data: dict):
+        bot.send_message(
+            message.chat.id, strings.start["ru"],
+            reply_markup=create_main_menu_markup(strings.menu.options, "ru"),
+            parse_mode="HTML"
+        )
+
+    @bot.message_handler(commands=["menu"])
     def menu_menu_command(message: Message, data: dict):
         #print(data)
         #user = data["user"]
