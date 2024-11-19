@@ -1,41 +1,26 @@
-## Telegram Bot Template
-
-This is a simple template for creating a Telegram bot using Python. It uses the `pyTelegramBotAPI` library for interaction with Telegram's API and SQLAlchemy for database interactions. The bot logs messages, saves user details, and can be deployed using Docker.
-
-## Structure
-
-The project is structured as follows:
-
-`main.py` - The main file that defines and runs the bot.
-
-`service/` - The module that contains a class with services for the bot.
-
-`conf/config.py` - The file that contains the configuration for the bot and the application.
-
-`conf/logging_config.py` - The file that contains the configuration for the logging.
-
-`api/telegram.py` - The file that handles interactions with the Telegram API.
-
-`db/database.py` - The file that handles interactions with the PostgreSQL database.
-
-`tests/` - The directory that contains the tests for the application.
-
-`Dockerfile` - The file that defines the Docker container for this application.
+# Content Assistant Bot
 
 ## Setup
 
 1. Clone this repository.
-2. Create a `.env` file in the root directory and add your database connection string and bot token.
-3. Install the dependencies with `pip install .`.
-4. Run the bot with `python src/telegrab_bot/main.py`.
+2. In `.env.example` set up variables:
+    - `BOT_TOKEN` -- bot token obtain from BotFather
+    - `INSTAGRAM_USERNAME` and `INSTAGRAM_PASSWORD` -- username and password from instagran account
+    - `FIREWORKS_API_KEY` -- API key from https://fireworks.ai
+3. Rename: `.env.example` -> `.env`
+3. Install the dependencies with `pip install -e .`.
+4. Run the bot with `python src/content_assistant_bot/main.py`.
 
-## Docker
 
-To run this application in a Docker container, follow these steps:
+## Configuration
 
-1. Build the Docker image with `docker build -t telegram-bot .`.
-2. Run the Docker container with `docker run -p 80:80 telegram-bot`.
+It is possible to configure each application in `src/content_assistant_bot/conf`
 
-## Examples of use
+To configure ideas generation module:
 
-In branches to this repository, you can find examples of use of this template.
+1. Open `src/content_assistant_bot/conf/ideas.yaml`
+2. Set up parameters:
+    - `model_name` -- language model to use (see the list here: https://fireworks.ai/models?type=text).
+    - `max_tokens` -- max number of tokens to generate for each call for a model: more token longer the response will be.
+    - `temperature` -- It affects the variability and randomness of generated responses, a lower value (close to 0) produces more deterministic and   focused outputs. Conversely, a higher temperature value (e.g., 1.0 or above) introduces more diversity and creativity.
+    - `system_prompt` -- initial prompt.
