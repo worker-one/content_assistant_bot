@@ -13,6 +13,14 @@ start:
 welcome:
   en: "Hello {name}!"
   ru: "Привет {name}!"
+
+cancel:
+  en: "Cancel"
+  ru: "Отмена"
+cancelled:
+  en: "Cancelled"
+  ru: "Отмененно"
+
 no_rights:
   en: "You have no rights to do this."
   ru: "У вас нет прав для этого."
@@ -47,6 +55,32 @@ admin_menu:
   add_admin:
     en: "Add admin"
     ru: "Добавить администратора"
+
+record_message_prompt:
+  en: "Enter a message:"
+  ru: "Введите сообщение:"
+enter_datetime_prompt:
+  en: "Enter the time and date ({timezone}) the message was sent in the following format %Y-%m-%d %H:%M . For example, 2024-10-02 12:00"
+  ru: "Введите время и дату ({timezone}), когда сообщение будет отправлено, в следующем формате %Y-%m-%d %H:%M . Например, 2024-10-02 12:00"
+past_datetime_error:
+  en: "The specified date has already passed"
+  ru: "Указанная дата уже прошла"
+message_scheduled_confirmation:
+  en: "The message for {n_users} users has been scheduled for {send_datetime} ({timezone})"
+  ru: "Сообщение для {n_users} пользователей запланировано на {send_datetime} ({timezone})"
+invalid_datetime_format:
+  en: "The datetime format is not correct."
+  ru: "Формат даты и времени неверен."
+
+enter_username:
+  en: "Enter username"
+  ru: "Введите username"
+enter_user_id:
+  en: "Enter user id"
+  ru: "Введите user id"
+add_admin_confirm:
+  en: "User {username} with id {user_id} was granted with admin rights"
+  ru: "Пользователь {username} с id {user_id} получил права администратора"
 
 error:
   en: "Error."

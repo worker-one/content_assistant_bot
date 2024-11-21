@@ -1,20 +1,33 @@
 import os
-
+import logging
 from dotenv import find_dotenv, load_dotenv
 
 from content_assistant_bot.api.bot import start_bot
 from content_assistant_bot.db import crud
 from content_assistant_bot.db.database import create_tables, drop_tables
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Load and get environment variables
 load_dotenv(find_dotenv(usecwd=True))
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
+
+def init_db():
+    """Initialize the database."""
+    # Create tables
+    create_tables()
+
+    # Add admin to user table
+    if ADMIN_USERNAME:
+        user = crud.upsert_user(id=ADMIN_USER_ID, name=ADMIN_USERNAME, role="admin")
+        logger.info(f"Admin user '{ADMIN_USERNAME}' ({ADMIN_USER_ID}) added to the database")
+
+    logger.info("Database initialized")
 
 
 if __name__ == "__main__":
     drop_tables()
-    create_tables()
-    # add admin user
-    if ADMIN_USERNAME:
-        crud.upsert_user(name=ADMIN_USERNAME, role="admin", lang="ru")
+    init_db()
     start_bot()

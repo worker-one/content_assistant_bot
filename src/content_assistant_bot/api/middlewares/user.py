@@ -25,8 +25,7 @@ class UserMessageMiddleware(BaseMiddleware):
             text=message.text
         )
         logger.info(f"User event: user: '{message.from_user.username}', message: '{message.text}'")
-        if data:
-            data['user'] = user
+        data['user'] = user
 
     def post_process(self, message, data, exception):
         pass
@@ -48,8 +47,7 @@ class UserCallbackMiddleware(BaseMiddleware):
             text=callback_query.data
         )
         logger.info(f"User event: user: '{callback_query.from_user.username}', callback_data: '{callback_query.data}'")
-        if data:
-            data['user'] = user
+        data['user'] = user
 
     def post_process(self, callback_query, data, exception):
         pass
