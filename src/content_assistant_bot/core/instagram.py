@@ -63,12 +63,11 @@ class InstagramWrapper:
                 reels.append(reel_item)
         return {"status": 200, "data": reels}
 
-    def fetch_hashtag_reels(self, hashtag: str, n_media_items: int = 50, estimate_view_count: bool = False):
+    def fetch_hashtag_reels(self, hashtag: str, n_media_items: int = 100, estimate_view_count: bool = False):
         media_list = self.client.hashtag_medias_top(hashtag, amount=n_media_items)
         if not media_list:
             return {"status": 404, "message": "Hashtag not found"}
         reels = []
-        logger.info(f"Found {len(media_list)} reels for hashtag {hashtag}")
         for media in media_list:
             if media.media_type == 2:
                 if media.play_count != 0:
@@ -92,4 +91,5 @@ class InstagramWrapper:
                 if estimate_view_count:
                     reel_item["estimated_view_count"] = reel_item["likes"] * 100 + random.randint(100, 1000)
                 reels.append(reel_item)
+        logger.info(f"Found {len(reels)} reels for hashtag {hashtag}")
         return {"status": 200, "data": reels}

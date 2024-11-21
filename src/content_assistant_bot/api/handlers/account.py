@@ -77,6 +77,8 @@ def register_handlers(bot):
     def get_instagram_input(message: Message, user: User, mode: str):
         user_input = sanitize_instagram_input(message.text)
 
+        bot.send_message(message.chat.id, config.strings.received[user.lang])
+
         if not instagram_client.user_exists(user_input):
             bot.send_message(message.chat.id, config.strings.no_found[user.lang])
             logger.info(f"Error fetching reels for account {user_input}")
@@ -104,8 +106,6 @@ def register_handlers(bot):
         del bot.callback_query_handlers[-1]
         print(f"input_text: {input_text}", f"mode: {mode}")
         number_of_videos = int(call.data)
-        received_msg = config.strings.received[user.lang]
-        bot.send_message(call.message.chat.id, received_msg)
 
         response = instagram_client.fetch_user_reels(input_text)
 
@@ -152,10 +152,14 @@ def register_handlers(bot):
             footer = config.strings.final_message["ru"].format(bot_name=bot.get_me().first_name)
             hr = "\n" + "—"*20 + "\n"
             response_message = '\n'.join(reel_response_items) + hr + footer
+            download_button = create_keyboard_markup(
+                [config.strings.download_report["ru"]], ["_download_document"]
+            )
             bot.send_message(
                 call.message.chat.id,
                 response_message,
-                parse_mode="HTML"
+                parse_mode="HTML",
+                reply_markup=download_button
             )
 
 
@@ -164,31 +168,21 @@ def register_handlers(bot):
                 media_elements
             )
 
-            # Create download button
-            download_button = create_keyboard_markup(
-                [config.strings.download_report["ru"]], ["_download_document"]
-            )
-            bot.send_message(
-                call.message.chat.id,
-                "⬇️",
-                reply_markup=download_button
-            )
-
             # Save all data as a dataframe
             df = pd.DataFrame(data)
             filename = f"{input_text}_reels_data.xlsx"
 
             # check if tmp exists
-            if not os.path.exists("./tmp"):
-                os.makedirs("./tmp")
-            filepath = os.path.join("./tmp", filename)  # Save it to a temporary directory
+            if not os.path.exists("./tmp/{user.id}"):
+                os.makedirs("./tmp/{user.id}")
+            filepath = os.path.join("./tmp/{user.id}", filename)  # Save it to a temporary directory
             df.to_excel(filepath, index=False)
 
             format_excel_file(filepath)
 
             # Register a handler for the download button
             bot.register_callback_query_handler(
-                func=lambda call: call.data == "_download_document",
+                func=lambda call: call.data == "_download_document_{filepath}",
                 callback=lambda call: send_excel_document(call, filepath, filename)
             )
 

@@ -46,7 +46,7 @@ def send_reels(call: CallbackQuery, bot, reels: list[dict[str, str]], response_t
     bot.send_message(call.message.chat.id, "\n".join(response_items), parse_mode="HTML")
 
 def send_excel_document(bot, call: CallbackQuery, filepath: str, filename: str):
-    if call.data != "_download_document":
+    if "_download_document" not in call.data:
         return
     del bot.callback_query_handlers[-1]
     logger.info(f"Sending Excel document for data: {call.data}")
@@ -91,8 +91,8 @@ def get_number_of_videos(call: CallbackQuery, bot, user: User, input_text: str, 
 
         df = pd.DataFrame(data)
         filename = f"{input_text}_reels_data.xlsx"
-        filepath = os.path.join("./tmp", filename)
-        os.makedirs("./tmp", exist_ok=True)
+        filepath = os.path.join(f"./tmp/{user.id}", filename)
+        os.makedirs(f"./tmp/{user.id}", exist_ok=True)
         df.to_excel(filepath, index=False)
         format_excel_file(filepath)
 
@@ -101,12 +101,12 @@ def get_number_of_videos(call: CallbackQuery, bot, user: User, input_text: str, 
             "Выберите действие:",
             reply_markup=create_keyboard_markup(
                 [config.strings.download_report["ru"], config.strings.next_videos[user.lang], "Меню"],
-                ["_download_document", "_next_n_videos", "_menu"],
+                [f"_download_document_{filepath}", "_next_n_videos", "_menu"],
             )
         )
 
         bot.register_callback_query_handler(
-            lambda c: c.data == "_download_document",
+            lambda c: c.data == f"_download_document_{filepath}",
             lambda c: send_excel_document(bot, c, filepath, filename)
         )
         bot.register_callback_query_handler(
