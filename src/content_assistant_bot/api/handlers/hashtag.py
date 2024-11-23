@@ -125,7 +125,7 @@ def register_handlers(bot):
         # Format reel responses
         reel_response_items = [
             format_hashtag_reel_response(
-                0,
+                idx+1,
                 reel,
                 config.strings.results[user.lang],
             )
@@ -170,8 +170,7 @@ def register_handlers(bot):
         # Save reels_data and current index in state
         state.add_data(
             reels_data=reels_data,
-            current_index=0,
-            number_of_videos=number_of_videos
+            current_index=0
         )
 
         # Send initial set of videos
@@ -182,10 +181,9 @@ def register_handlers(bot):
         with state.data() as data:
             reels_data = data["reels_data"]
             current_index = data["current_index"]
-            number_of_videos = data["number_of_videos"]
 
         # Calculate the next batch size
-        batch_size = number_of_videos
+        batch_size = 3
         next_index = current_index + batch_size
 
         # Update current index in state
@@ -193,13 +191,33 @@ def register_handlers(bot):
             data["current_index"] = next_index
 
         # Check if there are more videos to show
-        if next_index < len(reels_data):
+        if current_index == 0:
             # Show 'Show next 3 videos' button
             keyboard = create_keyboard_markup(
                 [config.strings.show_next_videos[user.lang]],
                 ["SHOW_NEXT_VIDEOS"],
             )
             bot.send_message(chat_id, config.strings.next_videos[user.lang], reply_markup=keyboard)
+
+        elif next_index < len(reels_data):
+
+            # Format reel responses
+            reel_response_items = [
+                format_hashtag_reel_response(
+                    current_index+idx+1,
+                    reel,
+                    config.strings.results[user.lang],
+                )
+                for idx, reel in enumerate(reels_data[next_index:next_index+batch_size])
+            ]
+
+            response_message = '\n'.join(reel_response_items)
+            bot.send_message(
+                chat_id,
+                response_message,
+                parse_mode="HTML",
+            )
+
         else:
             state.delete()
 

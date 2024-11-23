@@ -7,7 +7,7 @@ import pandas as pd
 from omegaconf import OmegaConf
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-from src.content_assistant_bot.core.utils import format_excel_file
+from content_assistant_bot.core.utils import format_excel_file
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

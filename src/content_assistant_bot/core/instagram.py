@@ -24,7 +24,7 @@ class InstagramWrapper:
         except:
             False
 
-    def fetch_user_reels(self, username: str, n_media_items: int = 40, estimate_view_count: bool = False):
+    def fetch_user_reels(self, username: str, n_media_items: int = 100, estimate_view_count: bool = False):
         try:
             user_id = self.client.user_id_from_username(username)
         except:
