@@ -27,8 +27,15 @@ logger = logging.getLogger(__name__)
 
 
 # Function to send a scheduled message
-def send_scheduled_message(bot, chat_id, message_text):
-    bot.send_message(chat_id, message_text)
+def send_scheduled_message(bot, user_id, media_type, message_text: str = None, message_photo: str = None):
+    if media_type == 'text':
+        bot.send_message(chat_id=user_id, text=message_text)
+    elif media_type == 'photo':
+        # Fetch the photo by file ID
+        if message_text:
+            bot.send_photo(chat_id=user_id, caption=message_text, photo=message_photo, disable_notification=False)
+        else:
+            bot.send_photo(chat_id=user_id, photo=message_photo, disable_notification=False)
 
 
 # React to any text if not command
@@ -90,7 +97,16 @@ def register_handlers(bot):
 
     # Handler to capture the custom message from the user
     def get_message_content(message, bot, user):
-        user_message = message.text
+        user_message = None
+        photo_file = None
+        if message.text:
+            user_message = message.text
+            media_type = 'text'
+        elif message.photo:
+            # Get the highest quality image (last item in the list)
+            photo_file = message.photo[-1].file_id
+            user_message = message.caption
+            media_type = 'photo'
 
         # Retrieve the previously stored datetime
         scheduled_datetime = user_data[user.id]['datetime']
@@ -100,9 +116,10 @@ def register_handlers(bot):
         for target_user in target_users:
             scheduler.add_job(
                 send_scheduled_message, 'date',
-                run_date=scheduled_datetime,
-                args=[bot, target_user.id, user_message]
-        )
+                run_date=scheduled_datetime, 
+                args=[bot, target_user.id, media_type, user_message, photo_file]
+            )
+
 
         # Inform the user that the message has been scheduled
         response = strings.message_scheduled_confirmation[user.lang].format(
@@ -115,56 +132,6 @@ def register_handlers(bot):
         # Clear the user data to avoid confusion
         del user_data[user.id]
 
-    @bot.callback_query_handler(func=lambda call: call.data == "_add_admin")
-    def add_admin_handler(call, data):
-        user = data["user"]
-        # to complete
-        sent_message = bot.send_message(user.id, strings.enter_username[user.lang])
-
-        # Move to the next step: receiving the custom message
-        bot.register_next_step_handler(sent_message, get_username, bot, user)
-
-    def get_username(message, bot, user):
-        admin_username = message.text
-
-        # Send prompt to enter user id
-        sent_message = bot.send_message(user.id, strings.enter_user_id[user.lang], reply_markup=create_cancel_button(strings, user.lang))
-
-        # Move to the next step: receiving the custom message
-        bot.register_next_step_handler(sent_message, get_user_id, bot, user, admin_username)
-
-    def get_user_id(message, bot, user, admin_username):
-        admin_user_id = message.text
-
-        added_user = crud.upsert_user(id=admin_user_id, name=admin_username, role="admin")
-
-        bot.send_message(user.id, strings.add_admin_confirm[user.lang].format(user_id=int(admin_user_id), username=admin_username))
-
-
-    @bot.callback_query_handler(func=lambda call: call.data == "_export_data")
-    def export_data_handler(call, data):
-        user = data["user"]
-
-        if user.role != "admin":
-            # inform that the user does not have rights
-            bot.send_message(call.from_user.id, strings.no_rights[user.lang])
-            return
-
-        # Export data
-        tables = ['messages', 'users']
-        export_dir = f'./data/{datetime.now().strftime("%Y%m%d_%H%M%S")}'
-        os.makedirs(export_dir)
-        try:
-            crud.export_all_tables(export_dir)
-            for table in tables:
-                # save as excel in temp folder and send to a user
-                filename = f"{export_dir}/{table}.csv"
-                bot.send_document(user.id, open(filename, 'rb'))
-                # remove the file
-                os.remove(filename)
-        except Exception as e:
-            bot.send_message(user.id, str(e))
-            logger.error(f"Error exporting data: {e}")
 
 # Start the scheduler
 scheduler.start()

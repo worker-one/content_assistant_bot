@@ -7,7 +7,12 @@ from telebot.states import State, StatesGroup
 from telebot.states.sync.context import StateContext
 from telebot.types import CallbackQuery, InputMediaVideo, Message
 
-from content_assistant_bot.api.handlers.common import create_keyboard_markup, create_resource, sanitize_instagram_input
+from content_assistant_bot.api.handlers.common import (
+    create_cancel_button,
+    create_keyboard_markup,
+    create_resource,
+    sanitize_instagram_input,
+)
 from content_assistant_bot.core import instagram
 from content_assistant_bot.db.crud import get_user
 
@@ -72,7 +77,8 @@ def register_handlers(bot):
         state.set(AnalyzeAccountStates.waiting_for_nickname)
         bot.send_message(
             call.from_user.id,
-            config.strings.enter_nickname[user.lang]
+            config.strings.enter_nickname[user.lang],
+            reply_markup=create_cancel_button(strings, user.lang)
         )
 
     @bot.message_handler(
@@ -83,7 +89,8 @@ def register_handlers(bot):
         state.set(AnalyzeAccountStates.waiting_for_nickname)
         bot.send_message(
             message.from_user.id,
-            config.strings.enter_nickname[user.lang]
+            config.strings.enter_nickname[user.lang],
+            reply_markup=create_cancel_button(strings, user.lang)
         )
 
     @bot.message_handler(state=AnalyzeAccountStates.waiting_for_nickname)

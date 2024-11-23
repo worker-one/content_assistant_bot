@@ -7,7 +7,7 @@ from telebot import types
 from telebot.states import State, StatesGroup
 from telebot.states.sync.context import StateContext
 
-from content_assistant_bot.api.handlers.common import create_keyboard_markup
+from content_assistant_bot.api.handlers.common import create_cancel_button, create_keyboard_markup
 from content_assistant_bot.api.schemas import Message
 from content_assistant_bot.core.llm import LLM
 from content_assistant_bot.db import crud
@@ -34,7 +34,7 @@ def register_handlers(bot):
         bot.send_message(
             call.from_user.id,
             config.strings.enter_query[user.lang],
-            reply_markup=create_keyboard_markup(["Меню"], ["_menu"])
+            reply_markup=create_cancel_button(config.strings, user.lang)
         )
 
     @bot.message_handler(
@@ -70,7 +70,7 @@ def register_handlers(bot):
         )
 
         chat_history = send_llm_response(
-            bot, user_id, chat_history, reply_markup=more_ideas_button
+            bot, user_id, chat_history, state, reply_markup=more_ideas_button
         )
 
         # Store chat_history in state
@@ -101,7 +101,7 @@ def register_handlers(bot):
         )
 
         chat_history = send_llm_response(
-            bot, user_id, chat_history, reply_markup=more_ideas_button
+            bot, user_id, chat_history, state, reply_markup=more_ideas_button
         )
 
         # Update chat_history in state
@@ -111,9 +111,10 @@ def send_llm_response(
     bot,
     user_id: int,
     chat_history: list[Message],
+    state: StateContext,
     image: Image = None,
     reply_markup=None
-    ) -> list[Message]:
+) -> list[Message]:
 
     # Load configurations
     model_config = instantiate(config.llm)
@@ -122,18 +123,28 @@ def send_llm_response(
     llm = LLM(model_config)
 
     # Generate and send the final response
-    response = llm.run(chat_history, image=image)
-    bot.send_message(
-        user_id, response.response_content,
-        reply_markup=reply_markup,
-        parse_mode="Markdown"
-    )
-    response_content = response.response_content
-
-    chat_history.append(
-        Message(
-            content=response_content,
-            role="assistant"
+    try:
+        response = llm.run(chat_history, image=image)
+        bot.send_message(
+            user_id, response.response_content,
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
         )
-    )
+        response_content = response.response_content
+
+        # Simple check: if response is too short
+        if len(response_content) < 2000:
+            response_content = config.strings.no_found.ru
+            bot.send_message(
+                user_id, config.strings.no_found.ru,
+                reply_markup=reply_markup
+            )
+            state.set(IdeasStates.waiting_for_query)
+    except Exception as e:
+        logger.error(f"Error generating LLM response: {e}")
+        bot.send_message(
+            user_id, config.strings.error.ru,
+            reply_markup=reply_markup
+        )
+        state.set(IdeasStates.waiting_for_query)
     return chat_history

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from omegaconf import OmegaConf
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.states.sync.context import StateContext
 
 from content_assistant_bot.core.utils import format_excel_file
 
@@ -107,8 +108,8 @@ def register_handlers(bot):
             bot.answer_callback_query(call.id, strings.file_not_found[user.lang])
 
     @bot.callback_query_handler(func=lambda call: call.data == "CANCEL")
-    def cancel_callback(call: CallbackQuery, data):
+    def cancel_callback(call: CallbackQuery, state: StateContext):
         """Cancel current operation"""
-        user = data["user"]
-        bot.send_message(call.message.chat.id, strings.cancelled[user.lang])
+        bot.send_message(call.message.chat.id, strings.cancelled["ru"])
         bot.clear_step_handler_by_chat_id(chat_id=call.message.chat.id)
+        state.delete()

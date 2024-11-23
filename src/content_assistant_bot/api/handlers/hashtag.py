@@ -8,6 +8,7 @@ from telebot.states.sync.context import StateContext
 from telebot.types import CallbackQuery, InputMediaVideo, Message
 
 from content_assistant_bot.api.handlers.common import (
+    create_cancel_button,
     create_keyboard_markup,
     create_resource,
     sanitize_instagram_input,
@@ -75,6 +76,7 @@ def register_handlers(bot):
         bot.send_message(
             message.from_user.id,
             config.strings.enter_hashtag[user.lang],
+            reply_markup=create_cancel_button(strings, user.lang)
         )
 
     # Handler for hashtag input
@@ -110,6 +112,11 @@ def register_handlers(bot):
         # Retrieve user input from state data
         with state.data() as data:
             input_text = data["user_input"]
+
+        bot.send_message(
+            call.message.chat.id,
+            config.strings.received[user.lang],
+        )
 
         response = instagram_client.fetch_hashtag_reels(
             input_text, estimate_view_count=False

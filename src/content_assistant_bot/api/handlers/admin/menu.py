@@ -31,7 +31,8 @@ def create_admin_menu_markup(strings, lang) -> InlineKeyboardMarkup:
     menu_markup.add(
         InlineKeyboardButton(strings.admin_menu.send_message[lang], callback_data="_public_message"),
         InlineKeyboardButton(strings.admin_menu.add_admin[lang], callback_data="_add_admin"),
-        InlineKeyboardButton(strings.admin_menu.export_data[lang], callback_data="_export_data")
+        InlineKeyboardButton(strings.admin_menu.export_data[lang], callback_data="_export_data"),
+        InlineKeyboardButton(strings.admin_menu.about[lang], callback_data="_about"),
     )
     return menu_markup
 
