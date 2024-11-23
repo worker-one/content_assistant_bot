@@ -6,12 +6,12 @@ from datetime import datetime
 import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 from omegaconf import OmegaConf
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
+from content_assistant_bot.api.handlers.common import create_cancel_button
 from content_assistant_bot.db import crud
 
 config = OmegaConf.load("./src/content_assistant_bot/conf/config.yaml")
-strings = OmegaConf.load("./src/content_assistant_bot/conf/strings.yaml")
+strings = OmegaConf.load("./src/content_assistant_bot/conf/common.yaml")
 
 # Define Paris timezone
 timezone = pytz.timezone(config.timezone)
@@ -26,23 +26,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def create_admin_menu_markup(strings, lang) -> InlineKeyboardMarkup:
-    menu_markup = InlineKeyboardMarkup(row_width=1)
-    menu_markup.add(
-        InlineKeyboardButton(strings.admin_menu.send_message[lang], callback_data="_public_message"),
-        InlineKeyboardButton(strings.admin_menu.add_admin[lang], callback_data="_add_admin"),
-        InlineKeyboardButton(strings.admin_menu.export_data[lang], callback_data="_export_data"),
-    )
-    return menu_markup
-
-def create_cancel_button(strings, lang):
-    cancel_button = InlineKeyboardMarkup(row_width=1)
-    cancel_button.add(
-        InlineKeyboardButton(strings.cancel[lang], callback_data="_cancel"),
-    )
-    return cancel_button
-
-
 # Function to send a scheduled message
 def send_scheduled_message(bot, chat_id, message_text):
     bot.send_message(chat_id, message_text)
@@ -50,27 +33,7 @@ def send_scheduled_message(bot, chat_id, message_text):
 
 # React to any text if not command
 def register_handlers(bot):
-
-    @bot.callback_query_handler(func=lambda call: call.data == "_cancel")
-    def cancel_callback(call, user):
-        bot.send_message(call.message.chat.id, strings.cancelled[user.lang])
-        bot.clear_step_handler_by_chat_id(chat_id=call.message.chat.id)
-        
-    @bot.message_handler(commands=["admin"])
-    def admin_menu_command(message: Message, data: dict):
-        user = data["user"]
-        print(user.__dict__)
-        if user.role != "admin":
-            # Inform the user that they do not have admin rights
-            bot.send_message(message.from_user.id, strings.no_rights[user.lang])
-            return
-
-        # Send the admin menu
-        bot.send_message(
-            message.from_user.id, strings.admin_menu.title[user.lang],
-            reply_markup=create_admin_menu_markup(strings, user.lang)
-        )
-
+    logger.info("Registering public message handlers")
     @bot.callback_query_handler(func=lambda call: call.data == "_public_message")
     def query_handler(call, data):
         user = data["user"]
@@ -151,7 +114,7 @@ def register_handlers(bot):
 
         # Clear the user data to avoid confusion
         del user_data[user.id]
-    
+
     @bot.callback_query_handler(func=lambda call: call.data == "_add_admin")
     def add_admin_handler(call, data):
         user = data["user"]

@@ -25,3 +25,5 @@ strings:
     ru: "Скачать отчёт"
   next_videos:
     ru: "Следующие 3 видео"
+  show_next_videos:
+    ru: "Показать"

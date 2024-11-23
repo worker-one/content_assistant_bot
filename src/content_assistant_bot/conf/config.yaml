@@ -1,5 +1,5 @@
 name: "content_assistant_bot"
-version: "0.2.1"
+version: "0.2.2"
 timezone: "Europe/Paris"
 antiflood:
   enabled: true

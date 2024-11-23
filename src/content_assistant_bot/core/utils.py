@@ -1,8 +1,23 @@
+import logging
+
 import openpyxl
 from openpyxl.styles import Alignment
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def format_excel_file(filepath: str) -> str:
+    """ Apply formatting to an Excel file
+
+    Args:
+        filepath: Path to the Excel file
+
+    Returns:
+        filepath: Path to the formatted Excel file
+
+    """
     # Load the Excel file to apply formatting
     wb = openpyxl.load_workbook(filepath)
     ws = wb.active
@@ -20,8 +35,8 @@ def format_excel_file(filepath: str) -> str:
             try:
                 if len(str(cell.value)) > max_length:
                     max_length = len(str(cell.value))
-            except:
-                pass
+            except Exception as e:
+                logger.error(f"Error formatting Excel file: {e}")
         adjusted_width = (max_length + 2)  # Add extra padding
         ws.column_dimensions[column].width = adjusted_width
 

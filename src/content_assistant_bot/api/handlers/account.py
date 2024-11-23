@@ -1,23 +1,23 @@
-from ast import parse
 import logging
 import os
-
 import pandas as pd
+from dotenv import find_dotenv, load_dotenv
 from omegaconf import OmegaConf
+from telebot.states import State, StatesGroup
+from telebot.states.sync.context import StateContext
 from telebot.types import CallbackQuery, InputMediaVideo, Message
 
-from content_assistant_bot.api.common import create_keyboard_markup, sanitize_instagram_input
+from content_assistant_bot.api.handlers.common import create_keyboard_markup, sanitize_instagram_input
 from content_assistant_bot.core import instagram
-from content_assistant_bot.core.utils import format_excel_file
 from content_assistant_bot.db.crud import get_user
-from content_assistant_bot.db.models import User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-strings = OmegaConf.load("./src/content_assistant_bot/conf/strings.yaml")
+strings = OmegaConf.load("./src/content_assistant_bot/conf/common.yaml")
 config = OmegaConf.load("./src/content_assistant_bot/conf/analyze_account.yaml")
 
+load_dotenv(find_dotenv(usecwd=True))
 INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
 INSTAGRAM_PASSWORD = os.getenv("INSTAGRAM_PASSWORD")
 
@@ -25,6 +25,11 @@ if not INSTAGRAM_USERNAME or not INSTAGRAM_PASSWORD:
     raise ValueError("Instagram credentials not found in environment variables")
 
 instagram_client = instagram.InstagramWrapper(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+
+# Define States
+class AnalyzeAccountStates(StatesGroup):
+    waiting_for_nickname = State()
+    waiting_for_number_of_videos = State()
 
 def format_account_reel_response(
     idx: int,
@@ -35,24 +40,18 @@ def format_account_reel_response(
     ) -> str:
 
     likes_diff = int(reel["likes"] - average_likes)
-    if likes_diff < 0:
-        likes_comparative = config.strings.comparative_less["ru"].format(
-            value=f"{abs(likes_diff):,}".replace(",", " ")
-        )
-    else:
-        likes_comparative = config.strings.comparative_more["ru"].format(
-            value=f"{likes_diff:,}".replace(",", " ")
-        )
+    likes_comparative = (
+        config.strings.comparative_less["ru"].format(value=f"{abs(likes_diff):,}".replace(",", " "))
+        if likes_diff < 0 else
+        config.strings.comparative_more["ru"].format(value=f"{likes_diff:,}".replace(",", " "))
+    )
 
     comments_diff = int(reel["comments"] - average_comments)
-    if comments_diff < 0:
-        comments_comparative = config.strings.comparative_less["ru"].format(
-            value=f"{abs(comments_diff):,}".replace(",", " ")
-        )
-    else:
-        comments_comparative = config.strings.comparative_more["ru"].format(
-            value=f"{comments_diff:,}".replace(",", " ")
-        )
+    comments_comparative = (
+        config.strings.comparative_less["ru"].format(value=f"{abs(comments_diff):,}".replace(",", " "))
+        if comments_diff < 0 else
+        config.strings.comparative_more["ru"].format(value=f"{comments_diff:,}".replace(",", " "))
+    )
 
     reel_response = template.format(
         idx=idx,
@@ -65,55 +64,60 @@ def format_account_reel_response(
     )
     return reel_response
 
-
+# Handlers
 def register_handlers(bot):
-
     @bot.callback_query_handler(func=lambda call: "_analyze_account" in call.data)
-    def analyze_account(call: CallbackQuery):
+    def analyze_account(call: CallbackQuery, state: StateContext):
         user = get_user(username=call.from_user.username)
-        sent_message = bot.send_message(call.from_user.id, config.strings.enter_nickname[user.lang])
-        bot.register_next_step_handler(sent_message, get_instagram_input, user, 'account')
+        state.set(AnalyzeAccountStates.waiting_for_nickname)
+        bot.send_message(
+            call.from_user.id,
+            config.strings.enter_nickname[user.lang]
+        )
 
-    def get_instagram_input(message: Message, user: User, mode: str):
+    @bot.message_handler(state=AnalyzeAccountStates.waiting_for_nickname)
+    def get_instagram_input(message: Message, state: StateContext):
+        user = get_user(username=message.from_user.username)
         user_input = sanitize_instagram_input(message.text)
+
+        # Save user input in state data
+        state.add_data(user_input=user_input)
 
         bot.send_message(message.chat.id, config.strings.received[user.lang])
 
         if not instagram_client.user_exists(user_input):
             bot.send_message(message.chat.id, config.strings.no_found[user.lang])
             logger.info(f"Error fetching reels for account {user_input}")
-
-            # Ask user to write another nickname
-            sent_message = bot.send_message(
-                message.chat.id,
-                config.strings.enter_nickname[user.lang],
-                reply_markup=create_keyboard_markup(["Menu"], ["_menu"])
-            )
-            bot.register_next_step_handler(sent_message, get_instagram_input, user, 'account')
+            state.delete()
             return
 
         keyboard = create_keyboard_markup(["5", "10", "30"], ["5", "10", "30"], "horizontal")
-
-        prompt = config.strings.ask_number_videos[user.lang]
-        bot.send_message(message.chat.id, prompt, reply_markup=keyboard)
-
-        bot.register_callback_query_handler(
-            func = lambda call: get_number_of_videos(call, bot, user, user_input, mode),
-            callback = lambda call: call.data in ["5", "10", "30"]
+        state.set(AnalyzeAccountStates.waiting_for_number_of_videos)
+        bot.send_message(
+            message.chat.id,
+            config.strings.ask_number_videos[user.lang],
+            reply_markup=keyboard
         )
 
-    def get_number_of_videos(call: CallbackQuery, bot, user: User, input_text: str, mode: str):
-        del bot.callback_query_handlers[-1]
-        print(f"input_text: {input_text}", f"mode: {mode}")
+    @bot.callback_query_handler(
+        func=lambda call: call.data in ["5", "10", "30"],
+        state=AnalyzeAccountStates.waiting_for_number_of_videos
+    )
+    def get_number_of_videos(call: CallbackQuery, state: StateContext):
+        user = get_user(username=call.from_user.username)
         number_of_videos = int(call.data)
+
+        # Retrieve user input from state data
+        with state.data() as data:
+            input_text = data['user_input']
 
         response = instagram_client.fetch_user_reels(input_text)
 
         if response["status"] == 200:
-            reels = response["data"]
-            reels.sort(key=lambda x: x["play_count"], reverse=True)
+            reels_data = response["data"]
+            reels_data.sort(key=lambda x: x["play_count"], reverse=True)
 
-            logger.info(f"Found {len(reels)} reels for account {input_text}")
+            logger.info(f"Found {len(reels_data)} reels for account {input_text}")
 
             result_ready_msg = config.strings.result_ready[user.lang].format(n=number_of_videos, nickname=input_text)
             bot.send_message(call.message.chat.id, result_ready_msg, parse_mode="HTML")
@@ -121,39 +125,45 @@ def register_handlers(bot):
             response_template = config.strings.results[user.lang]
 
             # Compute average values for likes and comments
-            average_likes = sum([reel["likes"] for reel in reels])/len(reels)
-            average_comments = sum([reel["comments"] for reel in reels])/len(reels)
+            average_likes = sum([reel["likes"] for reel in reels_data]) / len(reels_data)
+            average_comments = sum([reel["comments"] for reel in reels_data]) / len(reels_data)
 
-            data = []
-            reel_response_items = []
-            for idx, reel in enumerate(reels):
-                if idx < number_of_videos:
-                    reel_response_items.append(format_account_reel_response(
-                        idx + 1,
-                        reel, response_template,
-                        average_likes, average_comments
-                    ))
-                data.append({
+            reel_response_items = [
+                format_account_reel_response(
+                    idx + 1,
+                    reel,
+                    response_template,
+                    average_likes,
+                    average_comments
+                )
+                for idx, reel in enumerate(reels_data[:number_of_videos])
+            ]
+
+            data_list = [
+                {
                     "Url": reel["link"],
-                    'Likes': reel["likes"],
-                    'Comments': reel["comments"],
-                    'Views': reel["play_count"],
+                    "Likes": reel["likes"],
+                    "Comments": reel["comments"],
+                    "Views": reel["play_count"],
                     "Post Date": reel["post_date"].strftime("%Y-%m-%d %H:%M:%S"),
-                    "ER %": reel["er"]*100,
+                    "ER %": reel["er"] * 100,
                     "Owner": f'@{reel["owner"]}',
                     "Caption": reel["caption_text"]
-                })
-            # download the first three videos
-            media_elements = []
-            for reel in reels[:3]:
-                media_elements.append(
-                    InputMediaVideo(media=str(reel["video_url"]), caption=reel["title"])
-                )
+                }
+                for reel in reels_data
+            ]
+
+            # Generate unique filename and directory
+            filename = create_resource(user.id, input_text, data_list)
+
+            # Send response and download button
             footer = config.strings.final_message["ru"].format(bot_name=bot.get_me().first_name)
-            hr = "\n" + "—"*20 + "\n"
+            hr = "\n" + "—" * 20 + "\n"
             response_message = '\n'.join(reel_response_items) + hr + footer
+
             download_button = create_keyboard_markup(
-                [config.strings.download_report["ru"]], ["_download_document"]
+                [config.strings.download_report["ru"]],
+                [f"GET {filename}"],
             )
             bot.send_message(
                 call.message.chat.id,
@@ -162,42 +172,23 @@ def register_handlers(bot):
                 reply_markup=download_button
             )
 
+            # Optionally send media group
+            media_elements = []
+            for reel in reels_data[:3]:
+                media_elements.append(
+                    InputMediaVideo(media=str(reel["video_url"]), caption=reel["title"])
+                )
+            if media_elements:
+                bot.send_media_group(
+                    call.message.chat.id,
+                    media_elements
+                )
 
-            bot.send_media_group(
-                call.message.chat.id,
-                media_elements
-            )
-
-            # Save all data as a dataframe
-            df = pd.DataFrame(data)
-            filename = f"{input_text}_reels_data.xlsx"
-
-            # check if tmp exists
-            if not os.path.exists("./tmp/{user.id}"):
-                os.makedirs("./tmp/{user.id}")
-            filepath = os.path.join("./tmp/{user.id}", filename)  # Save it to a temporary directory
-            df.to_excel(filepath, index=False)
-
-            format_excel_file(filepath)
-
-            # Register a handler for the download button
-            bot.register_callback_query_handler(
-                func=lambda call: call.data == "_download_document_{filepath}",
-                callback=lambda call: send_excel_document(call, filepath, filename)
-            )
+            state.delete()
 
         else:
             if response["status"] == 403:
                 bot.send_message(call.message.chat.id, config.strings.private_account[user.lang])
             else:
                 bot.send_message(call.message.chat.id, config.strings.error[user.lang])
-
-    def send_excel_document(call: CallbackQuery, filepath: str, filename: str):
-        with open(filepath, 'rb') as file:
-            bot.send_document(
-                call.message.chat.id, file,
-                visible_file_name=filename
-            )
-
-        # Delete the Excel file after sending it
-        os.remove(filepath)
+            state.delete()
