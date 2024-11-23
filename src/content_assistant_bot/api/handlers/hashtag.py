@@ -5,7 +5,7 @@ from dotenv import find_dotenv, load_dotenv
 from omegaconf import OmegaConf
 from telebot.states import State, StatesGroup
 from telebot.states.sync.context import StateContext
-from telebot.types import CallbackQuery, Message
+from telebot.types import CallbackQuery, InputMediaVideo, Message
 
 from content_assistant_bot.api.handlers.common import (
     create_keyboard_markup,
@@ -54,12 +54,26 @@ def format_hashtag_reel_response(idx: int, reel: dict[str, str], template: str) 
 # Handlers
 def register_handlers(bot):
     # Start command handler
-    @bot.callback_query_handler(func=lambda call: "_analyze_hashtag" in call.data)
+    @bot.callback_query_handler(
+        func=lambda call: "_analyze_hashtag" in call.data
+    )
     def analyze_hashtag(call: CallbackQuery, state: StateContext):
         user = get_user(username=call.from_user.username)
         state.set(AnalyzeHashtagStates.waiting_for_hashtag)
         bot.send_message(
             call.from_user.id,
+            config.strings.enter_hashtag[user.lang],
+        )
+
+    # Start command handler
+    @bot.message_handler(
+        commands=["analyze_hashtag", "topic"]
+    )
+    def analyze_hashtag(message: Message, state: StateContext):
+        user = get_user(username=message.from_user.username)
+        state.set(AnalyzeHashtagStates.waiting_for_hashtag)
+        bot.send_message(
+            message.from_user.id,
             config.strings.enter_hashtag[user.lang],
         )
 
@@ -153,8 +167,7 @@ def register_handlers(bot):
 
         # Send response and download button
         footer = config.strings.final_message["ru"].format(bot_name=bot.get_me().username)
-        hr = "\n" + "—" * 20 + "\n"
-        response_message = '\n'.join(reel_response_items) + hr + footer
+        response_message = '\n'.join(reel_response_items) + "\n" + footer
 
         download_button = create_keyboard_markup(
             [config.strings.download_report["ru"]],
@@ -166,6 +179,18 @@ def register_handlers(bot):
             parse_mode="HTML",
             reply_markup=download_button
         )
+
+        # Optionally send media group
+        media_elements = []
+        for reel in reels_data[:3]:
+            media_elements.append(
+                InputMediaVideo(media=str(reel["video_url"]), caption=reel["title"])
+            )
+        if media_elements:
+            bot.send_media_group(
+                call.message.chat.id,
+                media_elements
+            )
 
         # Save reels_data and current index in state
         state.add_data(

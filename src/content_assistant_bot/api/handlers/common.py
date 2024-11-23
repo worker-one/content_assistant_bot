@@ -28,8 +28,11 @@ def is_command(message):
 def sanitize_instagram_input(user_input: str) -> str:
     user_input = user_input.replace("#", "").replace("@", "")
     if "instagram.com" in user_input:
-        user_input = user_input.strip('/').split('/')[-1]
+        match = re.search(r"(?:https?://)?(?:www\.)?instagram\.com/([A-Za-z0-9_.]+)", user_input)
+        if match:
+            user_input = match.group(1)
     return user_input
+
 
 def create_resource(user_id: int, name: str, data_list: list[dict]) -> str:
     # Create user directory

@@ -1,6 +1,6 @@
 name: "content_assistant_bot"
-version: "0.2.2"
-timezone: "Europe/Paris"
+version: "0.2.3"
+timezone: "Europe/Moscow"
 antiflood:
   enabled: true
   time_window_seconds: 2

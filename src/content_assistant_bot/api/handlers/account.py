@@ -75,6 +75,17 @@ def register_handlers(bot):
             config.strings.enter_nickname[user.lang]
         )
 
+    @bot.message_handler(
+        commands=["analyze_account", "account"]
+    )
+    def analyze_hashtag(message: Message, state: StateContext):
+        user = get_user(username=message.from_user.username)
+        state.set(AnalyzeAccountStates.waiting_for_nickname)
+        bot.send_message(
+            message.from_user.id,
+            config.strings.enter_nickname[user.lang]
+        )
+
     @bot.message_handler(state=AnalyzeAccountStates.waiting_for_nickname)
     def get_instagram_input(message: Message, state: StateContext):
         user = get_user(username=message.from_user.username)
@@ -158,8 +169,7 @@ def register_handlers(bot):
 
             # Send response and download button
             footer = config.strings.final_message["ru"].format(bot_name=bot.get_me().username)
-            hr = "\n" + "—" * 20 + "\n"
-            response_message = '\n'.join(reel_response_items) + hr + footer
+            response_message = '\n'.join(reel_response_items) + '\n' + footer
 
             download_button = create_keyboard_markup(
                 [config.strings.download_report["ru"]],

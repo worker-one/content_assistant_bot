@@ -4,8 +4,8 @@ from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from PIL import Image
 from telebot import types
-from telebot.states.sync.context import StateContext
 from telebot.states import State, StatesGroup
+from telebot.states.sync.context import StateContext
 
 from content_assistant_bot.api.handlers.common import create_keyboard_markup
 from content_assistant_bot.api.schemas import Message
@@ -28,6 +28,18 @@ class IdeasStates(StatesGroup):
 def register_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: "_generate_ideas" in call.data)
+    def generate_ideas(call: types.CallbackQuery, state: StateContext):
+        user = crud.get_user(username=call.from_user.username)
+        state.set(IdeasStates.waiting_for_query)
+        bot.send_message(
+            call.from_user.id,
+            config.strings.enter_query[user.lang],
+            reply_markup=create_keyboard_markup(["Меню"], ["_menu"])
+        )
+
+    @bot.message_handler(
+        commands=["_generate_ideas", "idea"]
+    )
     def generate_ideas(call: types.CallbackQuery, state: StateContext):
         user = crud.get_user(username=call.from_user.username)
         state.set(IdeasStates.waiting_for_query)
