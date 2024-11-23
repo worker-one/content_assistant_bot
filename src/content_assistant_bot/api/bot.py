@@ -51,5 +51,5 @@ def start_bot():
     bot.setup_middleware(StateMiddleware(bot))
 
     logger.info(msg=f"Bot `{str(bot.get_me().username)}` has started")
-    #bot.infinity_polling(timeout=190)
-    bot.polling()
+    bot.infinity_polling(timeout=190)
+

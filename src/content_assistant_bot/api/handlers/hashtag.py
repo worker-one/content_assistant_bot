@@ -1,7 +1,6 @@
 import logging
 import os
 
-
 from dotenv import find_dotenv, load_dotenv
 from omegaconf import OmegaConf
 from telebot.states import State, StatesGroup
@@ -10,6 +9,7 @@ from telebot.types import CallbackQuery, Message
 
 from content_assistant_bot.api.handlers.common import (
     create_keyboard_markup,
+    create_resource,
     sanitize_instagram_input,
 )
 from content_assistant_bot.core import instagram
@@ -152,7 +152,7 @@ def register_handlers(bot):
         filename = create_resource(user.id, data["user_input"], data_list)
 
         # Send response and download button
-        footer = config.strings.final_message["ru"].format(bot_name=bot.get_me().first_name)
+        footer = config.strings.final_message["ru"].format(bot_name=bot.get_me().username)
         hr = "\n" + "—" * 20 + "\n"
         response_message = '\n'.join(reel_response_items) + hr + footer
 
